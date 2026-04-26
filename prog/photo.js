@@ -6,7 +6,7 @@ class PhotoProgram extends Program {
         let winfo = {
             name: imageName,
             title:imageName,
-            icon: `img/desktop/bitmap.png`, // Dynamically generate the image source
+            icon: `img/desktop/bitmap.png`, 
             resizable: false,
             margin: false,
             app: true
