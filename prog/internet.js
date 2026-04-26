@@ -29,6 +29,7 @@ class InternetProgram extends Program {
                         Help
                     </span>
                 </div>
+                <input class="menu-bar__input" type="text" value="https://www.google.com/webhp?igu=1" disabled>
             </div>
             <iframe
             style="width: calc(100% - 4px); height: 100%"
