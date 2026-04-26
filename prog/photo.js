@@ -7,7 +7,7 @@ class PhotoProgram extends Program {
       name: imageName,
       title: imageName,
       icon: `img/desktop/bitmap.png`, // Dynamically generate the image source
-      resizable: true,
+      resizable: fasle,
       margin: false,
       app: true,
     };
