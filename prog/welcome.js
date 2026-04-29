@@ -1,10 +1,10 @@
 class WelcomeProgram extends Program {
     createWindow() {
-        let body   = window.__welcomepage
+        let body = window.__welcomepage
         let wminfo = {
             title: 'Welcome!',
-            name:  'Welcome!',
-            icon:  'img/taskbar/WindowsFlagSmall.png',
+            name: 'Welcome!',
+            icon: 'img/taskbar/WindowsFlagSmall.png',
         }
 
         return [wminfo, body]
