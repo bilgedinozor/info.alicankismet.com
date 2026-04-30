@@ -4,6 +4,7 @@
  *             1 : desktop icons
  *             2 : selections render
  *             3+: windows
+ *           900 : winamp
  *           999 : taskbar
  *          1010 : start menu
  *          2010 : menu bar menus
@@ -781,3 +782,24 @@ img {
     vertical-align: middle;
     line-height: 1.2;
 }
+
+#winamp-container {
+    position: fixed;
+    top: 15%; /* Üstten biraz boşluk bırakarak orta-üst kısma alıyoruz */
+    left: 50%;
+    transform: translateX(-137px); /* Genişliğin yarısı kadar sola kaydırarak tam ortalıyoruz */
+    z-index: 10000 !important;
+    pointer-events: none;
+}
+
+
+#winamp-container *, 
+#webamp, 
+.webamp-window {
+    pointer-events: auto !important;
+}
+
+#webamp {
+    z-index: 10000 !important;
+}
+
