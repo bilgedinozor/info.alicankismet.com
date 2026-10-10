@@ -103,6 +103,31 @@
     min-width: 200px;
 }
 
+/* --- PHOTO --- */
+
+.photo__view {
+    flex-grow: 1;
+    position: relative;
+
+    background-color: grey;
+    box-shadow: var(--inset__inverse);
+
+    min-height: 100px;
+    min-width: 200px;
+}
+
+/* fills the view whatever the window's size, so resizing scales the picture */
+.photo__view > img {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: calc(100% - 4px);
+    height: calc(100% - 4px);
+
+    object-fit: contain;
+    image-rendering: auto; /* photos look bad with the global pixelated setting */
+}
+
 /* --- EMAIL --- */
 
 .window[data-name="Email"] .email__body {

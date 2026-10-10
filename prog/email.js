@@ -32,7 +32,7 @@ class EmailProgram extends Program {
                     <span class="menu-bar__label">
                         To:
                     </span>
-                    <input class="menu-bar__input" type="text" value="info@alicankismet.com" disabled>
+                    <input class="menu-bar__input" type="text" value="me@alicankismet.com" disabled>
                 </div>
                 <div class="menu-bar__hr"></div>
                 <div class="menu-bar__menu">
@@ -86,7 +86,7 @@ class EmailProgram extends Program {
         subject = encodeURIComponent(subject)
         cc      = encodeURIComponent(cc)
 
-        let href = `mailto:info@alicankismet.com?subject=${subject}&cc=${cc}&body=${body}`
+        let href = `mailto:me@alicankismet.com?subject=${subject}&cc=${cc}&body=${body}`
 
         this.getBodyHandle()
             .querySelector('.email__send')

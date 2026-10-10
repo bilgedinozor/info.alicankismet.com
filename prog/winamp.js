@@ -1,87 +1,130 @@
 class WinampProgram extends Program {
-    async createWindow(arg) {
-        const Webamp = window.Webamp;
-        if (!Webamp || !Webamp.browserIsSupported()) {
-            alert("Webamp is not supported in this browser.");
-            return [{}, ""];
+    // webamp is ~1MB, so it's only fetched the first time winamp is launched
+    static loadWebamp() {
+        if (window.Webamp) return Promise.resolve(window.Webamp)
+
+        if (!WinampProgram.loading) {
+            WinampProgram.loading = new Promise((resolve, reject) => {
+                const script = document.createElement('script')
+                script.src = 'lib/webamp/webamp.bundle.min.js'
+                script.onload = () => resolve(window.Webamp)
+                script.onerror = () => {
+                    // allow a retry on the next launch
+                    WinampProgram.loading = null
+                    script.remove()
+                    reject(new Error('could not load webamp'))
+                }
+                document.head.appendChild(script)
+            })
         }
 
-        if (!window.webampInstance) {
-            window.webampInstance = new Webamp({
-                initialTracks: [
-                    {
-                        metaData: {
-                            artist: "Ali Can Kismet",
-                            title: "Portfolio Music",
-                        },
-                        url: "mp3/sample.mp3", // Just in case user adds it later
-                        duration: 0
-                    }
-                ],
-            });
+        return WinampProgram.loading
+    }
 
-            // Set up container
-            let container = document.getElementById('winamp-container');
-            if (!container) {
-                container = document.createElement('div');
-                container.id = 'winamp-container';
-                document.body.appendChild(container);
+    // tracks are listed in mp3/playlist.json (see mp3/playlist.example.json)
+    static async loadTracks() {
+        try {
+            const res = await fetch('mp3/playlist.json', {cache: 'no-cache'})
+            if (!res.ok) return []
+
+            const playlist = await res.json()
+            return playlist.map(({file, artist, title}) => {
+                const track = {
+                    url: `mp3/${encodeURIComponent(file)}`,
+                    defaultName: title || file
+                }
+                // without both of these webamp reads the tags from the file
+                if (artist && title) {
+                    track.metaData = {artist, title}
+                }
+                return track
+            })
+        } catch (e) {
+            console.warn('could not read the winamp playlist', e)
+            return []
+        }
+    }
+
+    async createWindow() {
+        document.body.style.cursor = 'wait'
+        try {
+            const [Webamp, initialTracks] = await Promise.all([
+                WinampProgram.loadWebamp(),
+                WinampProgram.loadTracks()
+            ])
+            if (!Webamp.browserIsSupported()) {
+                throw new Error('browser is not supported by webamp')
             }
 
-            await window.webampInstance.renderWhenReady(container);
+            // webamp centers itself on this node
+            this.container = document.createElement('div')
+            this.container.id = 'winamp-container'
+            document.body.appendChild(this.container)
 
-            window.webampInstance.onClose(() => {
-                window.webampInstance.dispose();
-                window.webampInstance = null;
-                if (this.handle) {
-                    window.wm.removeWindow(this.handle);
-                }
-            });
-
-            window.webampInstance.onMinimize(() => {
-                if (this.handle) {
-                    window.wm.minimizeWindow(this.handle);
-                }
-            });
-        } else {
-            window.webampInstance.reopen();
+            // the context menu sits at zIndex + 1: above every window, below the taskbar
+            this.webamp = new Webamp({initialTracks, zIndex: 900})
+            await this.webamp.renderWhenReady(this.container)
+        } catch (e) {
+            console.warn('could not start winamp', e)
+            this.onClose()
+            window.pm.createInstance('dialog:Error|Winamp|Winamp could not be started.|OK')
+            return null
+        } finally {
+            document.body.style.cursor = ''
         }
 
-        // Return a "ghost" window to provide taskbar presence
-        let winfo = {
+        // webamp draws its own windows, so this one is never shown: it only
+        // gives winamp a taskbar button and a slot in the window order
+        let wminfo = {
             name: 'Winamp',
-            title: 'Winamp',
             icon: 'img/special/winamp.png',
-            resizable: false,
             width: 0,
             height: 0,
             x: -1000,
             y: -1000
         }
 
-        return [winfo, '']
+        return [wminfo, '']
     }
 
     onAttach(win) {
-        this.handle = win;
-        win.style.visibility = 'hidden';
-        win.style.pointerEvents = 'none';
-        
-        // Listen for minimization changes to sync with Webamp
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (mutation.type === 'attributes' && mutation.attributeName === 'data-wm_minimized') {
-                    const isMinimized = win.dataset.wm_minimized === 'true';
-                    if (isMinimized) {
-                        window.webampInstance?.minimize();
-                    } else {
-                        window.webampInstance?.reopen();
-                    }
-                }
-            });
-        });
-        observer.observe(win, { attributes: true });
+        win.style.visibility = 'hidden'
+        win.style.pointerEvents = 'none'
+
+        this.root = document.getElementById('webamp')
+
+        // clicking winamp brings it to the front like any other window
+        const focus = () => this.focusWindow()
+        this.root.addEventListener('mousedown', focus, true)
+        this.root.addEventListener('touchstart', focus, true)
+
+        this.webamp.onMinimize(() => window.wm.minimizeWindow(win))
+        this.webamp.onClose(() => this.closeWindow())
+
+        // mirror the window's order and minimized state onto webamp
+        this.observer = new MutationObserver(() => this.syncWithWindow())
+        this.observer.observe(win, {
+            attributes: true,
+            attributeFilter: ['style', 'data-wm_minimized']
+        })
+        this.syncWithWindow()
+    }
+
+    syncWithWindow() {
+        this.root.style.setProperty('--winamp-z', this.handle.style.zIndex)
+        // hidden rather than paused, so the music keeps playing while minimized
+        this.root.style.display = (this.handle.dataset.wm_minimized === 'true') ? 'none' : ''
+    }
+
+    onClose() {
+        this.observer?.disconnect()
+
+        const webamp = this.webamp
+        this.webamp = null
+        webamp?.dispose()
+
+        this.container?.remove()
     }
 }
 
-window.pm.registerPrototype('winamp', WinampProgram);
+window.pm.registerPrototype('winamp', WinampProgram)

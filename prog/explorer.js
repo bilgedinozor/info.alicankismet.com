@@ -232,11 +232,26 @@ class ExplorerProgram extends Program {
     }
 
     async openPath(pathstr) {
+        // a folder that's already open in another window is shown there instead
+        const key = ExplorerProgram.keyFor('explorer', pathstr)
+        const open = window.pm.findInstance(key)
+        if (open && open !== this) {
+            open.focusWindow()
+            return
+        }
+        this._pm_key = key
+
         const [winfo, body] = await this.createWindow(pathstr)
         this.getBodyHandle().innerHTML = body
         this.setWindowIcon(winfo.icon)
+        this.setWindowName(winfo.name)
         this.setWindowTitle(winfo.title)
         this.onAttach()
+    }
+
+    // no argument means the root folder
+    static keyFor(name, arg) {
+        return `${name}:${arg ?? 'C:'}`
     }
 }
 

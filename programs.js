@@ -54,12 +54,36 @@ class ProgramManager {
             console.warn(`attempted to open unregistered program ${name}, ignoring...`)
             return
         }
+
+        // every window only opens once: launching something that's already
+        // open brings its window to the front instead
+        const key = this.prototypes[name].keyFor(name, arg)
+        const running = this.findInstance(key)
+        if (running) {
+            running.focusWindow()
+            return
+        }
+
         const id = this.createID()
 
         // this feels real hacky
         const handle = this.instances[id] = new (this.prototypes[name])(id)
+        handle._pm_key = key
 
-        const [wminfo, body] = await handle.createWindow(arg)
+        // a program can decline to open a window by returning nothing
+        let created
+        try {
+            created = await handle.createWindow(arg)
+        } catch (e) {
+            // don't leave a windowless instance behind, it would block relaunching
+            delete this.instances[id]
+            throw e
+        }
+        if (!created) {
+            delete this.instances[id]
+            return
+        }
+        const [wminfo, body] = created
 
         window.wm.openWindow(wminfo, body, win => {
             win.dataset._pm_id = id
@@ -70,6 +94,34 @@ class ProgramManager {
             // dispatch handler
             handle.onAttach(win)
         })
+    }
+
+    findInstance(key) {
+        for (let id of Object.keys(this.instances)) {
+            const instance = this.instances[id]
+            if (instance._pm_key !== key) continue
+
+            // windows removed without going through closeInstance leave these behind
+            if (instance.handle && !instance.handle.isConnected) {
+                delete this.instances[id]
+                continue
+            }
+
+            return instance
+        }
+
+        return null
+    }
+
+    // take over a window that was in the page from the start, rather than
+    // opened by a program
+    adoptWindow(name, win) {
+        const id = this.createID()
+        const handle = this.instances[id] = new (this.prototypes[name])(id)
+        handle._pm_key = this.prototypes[name].keyFor(name, null)
+
+        win.dataset._pm_id = id
+        handle.setWindowHandle(win)
     }
 
     getInstance(id) {
@@ -98,6 +150,12 @@ class ProgramManager {
 class Program {
     constructor(id) {
         this._pm_id = id
+    }
+
+    // identifies what a window is showing: two launches with the same key
+    // share one window
+    static keyFor(name, arg) {
+        return (arg == null) ? name : `${name}:${arg}`
     }
 
     async createWindow(arg) {
@@ -191,6 +249,13 @@ class Program {
             return null
         }
         return this.handle.querySelector('.window-body')
+    }
+
+    focusWindow() {
+        // still starting up
+        if (!this.handle) return
+
+        window.wm.windowFocus(this.handle)
     }
 
     setWindowTitle(title) {

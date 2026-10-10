@@ -3,8 +3,8 @@
 /* z index of  0 : selections event sink
  *             1 : desktop icons
  *             2 : selections render
- *             3+: windows
- *           900 : winamp
+ *             3+: windows (winamp follows the slot of its own hidden window)
+ *           901 : winamp context menu
  *           999 : taskbar
  *          1010 : start menu
  *          2010 : menu bar menus
@@ -640,9 +640,9 @@ canvas#selections {
 
 /* --- WINDOWING --- */
 
-.window-host { 
-    z-index: 5;
-}
+/* .window-host has no z-index of its own: windows stack directly against the
+ * rest of the page, so that winamp (which lives outside the host) can sit
+ * in between them */
 .window-host > .window[data-window] {
     position: fixed;
     /*
@@ -783,23 +783,44 @@ img {
     line-height: 1.2;
 }
 
+/* --- WINAMP --- */
+
+/* webamp centers itself on this node, so it covers the desktop */
 #winamp-container {
     position: fixed;
-    top: 15%; /* Üstten biraz boşluk bırakarak orta-üst kısma alıyoruz */
-    left: 50%;
-    transform: translateX(-137px); /* Genişliğin yarısı kadar sola kaydırarak tam ortalıyoruz */
-    z-index: 10000 !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 30px;
     pointer-events: none;
 }
 
-
-#winamp-container *, 
-#webamp, 
-.webamp-window {
-    pointer-events: auto !important;
+/* set from prog/winamp.js to follow the order of winamp's hidden window */
+#webamp {
+    z-index: var(--winamp-z) !important;
 }
 
-#webamp {
-    z-index: 10000 !important;
+/* 98.css restyles every range input on the page: undo the parts that webamp
+ * doesn't reset itself, otherwise the volume/balance/seek thumbs sit 8px too
+ * high and a black track covers the skin's own slider graphics.
+ * (one rule per vendor prefix: an unknown one would void a combined selector) */
+#webamp input[type="range"]::-webkit-slider-thumb {
+    transform: none;
+}
+#webamp input[type="range"]::-moz-range-thumb {
+    transform: none;
+}
+#webamp input[type="range"]::-webkit-slider-runnable-track {
+    height: auto;
+    box-sizing: content-box;
+    background: none;
+    border: none;
+    box-shadow: none;
+}
+#webamp input[type="range"]::-moz-range-track {
+    height: auto;
+    box-sizing: content-box;
+    border: none;
+    box-shadow: none;
 }
 
