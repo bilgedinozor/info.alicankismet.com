@@ -34,6 +34,17 @@ class WindowManager {
         document.querySelector('.task-bar__quick[alt="Show Desktop"]')
             .addEventListener('click', this.minimizeAll.bind(this))
 
+        // in the phone layout (css/mobile.css) windows are sized to the screen,
+        // so they change size whenever it does
+        let wasPhoneLayout = isPhoneLayout()
+        window.addEventListener('resize', () => {
+            if (wasPhoneLayout || isPhoneLayout()) {
+                document.querySelectorAll('[data-window][data-wm_resizable="true"]')
+                    .forEach(win => this.notifyResized(win))
+            }
+            wasPhoneLayout = isPhoneLayout()
+        })
+
         this.redrawTaskbarMain()
     }
 
@@ -48,6 +59,13 @@ class WindowManager {
             str += alphabet[Math.floor(Math.random() * alphabet.length)]
         }
         return str
+    }
+
+    // tell a window's program that its size was changed from the outside
+    notifyResized(win) {
+        const instance = window.pm.instances[win.dataset._pm_id]
+        instance?.onResize()
+        instance?.onResizeEnd()
     }
 
     /* --- WINDOW MOVEMENT --- */
@@ -115,9 +133,12 @@ class WindowManager {
         win.dataset.isresizing = false
 
 
-        let rect = win.getBoundingClientRect()
-        win.style.minWidth  = `${rect.width - 4}px`
-        win.style.minHeight = `${rect.height - 4}px`
+        // in the phone layout the window fills the screen, which is no minimum
+        if (!isPhoneLayout()) {
+            let rect = win.getBoundingClientRect()
+            win.style.minWidth  = `${rect.width - 4}px`
+            win.style.minHeight = `${rect.height - 4}px`
+        }
 
         const resizeEnd = () => {
             // resize ended
@@ -402,6 +423,7 @@ class WindowManager {
         if (name) win.dataset.name = name
         if (icon) win.dataset.icon = icon
         win.dataset.window = true
+        if (resizable) win.dataset.wm_resizable = true
 
         let resize_handle = !resizable ? '' : '<div class="window-resize-handle"></div>'
         title = title || name
@@ -476,6 +498,11 @@ class WindowManager {
         // add a callback if necessary
         if (cb) {
             cb(win)
+        }
+
+        // on phones these fill the screen rather than opening at their own size
+        if (resizable && isPhoneLayout()) {
+            this.notifyResized(win)
         }
     }
 
