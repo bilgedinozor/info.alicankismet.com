@@ -1,7 +1,7 @@
 services:
   web:
     image: nginx:stable-alpine
-    container_name: info-alicankismet
+    container_name: me-alicankismet
     restart: unless-stopped
     ports:
       # published like the other services on the server; cloudflared points here
