@@ -3,8 +3,8 @@
  * This file is only applied on phone-sized screens (see the media attribute
  * of its <link> in index.html), so nothing in here touches the desktop
  * experience. On a phone:
- *      - programs fill the screen, one at a time (the taskbar switches)
- *      - dialogs stay boxes, centered above the taskbar
+ *      - windows still float and drag around, but never open bigger than
+ *        the screen or off it (the window manager helps, see windows.js)
  *      - everything that gets tapped is finger-sized
  *      - start menu submenus fold open in place (see startmenu.js)
  */
@@ -38,42 +38,46 @@ label {
 
 /* --- WINDOWS --- */
 
-/* programs: these override the position and size the window manager sets */
-.window-host > .window[data-window][data-wm_resizable="true"] {
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: calc(100% - var(--taskbar-height)) !important;
+/* inline sizes from the window manager still apply, within these limits */
+.window-host > .window[data-window] {
+    box-sizing: border-box;
+    /* otherwise a window gets narrower the further right it sits */
+    width: max-content;
+    max-width: calc(100% - 8px);
+    max-height: calc(100% - var(--taskbar-height) - 8px);
+
+    /* the desktop's minimum is stamped per window, and can be more than fits */
     min-width: 0 !important;
     min-height: 0 !important;
-
-    box-sizing: border-box;
-    transform: none;
+}
+.window-host > .window[data-window][data-wm_resizable="true"] {
+    min-width: 180px !important;
+    min-height: 120px !important;
+    overflow: hidden;
 }
 
-/* dialogs (and the welcome window) */
+/* dialogs can't be resized, so whatever doesn't fit has to scroll */
 .window-host > .window[data-window]:not([data-wm_resizable="true"]) {
-    top: 8px !important;
-    bottom: calc(var(--taskbar-height) + 8px);
-    left: 8px !important;
-    right: 8px;
-    margin: auto;
-
-    width: fit-content;
-    height: fit-content;
-    max-width: calc(100% - 16px);
-    max-height: calc(100% - var(--taskbar-height) - 16px);
-
-    box-sizing: border-box;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
 }
 
-/* nothing to resize or maximize when the window always fills the screen */
-.window-resize-handle,
-.title-bar-controls button[aria-label="Maximize"],
-.title-bar-controls button[aria-label="Restore"] {
-    display: none;
+/* same as index.css, without the margin the desktop leaves around it */
+.window-host > .window[data-window][data-wm_maximized="true"] {
+    height: calc(100% - var(--taskbar-height)) !important;
+    max-width: none;
+    max-height: none;
+    transform: none;
+}
+
+/* dragging these shouldn't scroll, zoom or refresh the page instead */
+html,
+body {
+    overscroll-behavior: none;
+}
+.window > .title-bar,
+.window-resize-handle {
+    touch-action: none;
 }
 
 .window > .title-bar {
@@ -104,6 +108,14 @@ label {
     background-size: 12px 4px;
     background-position: bottom 6px left 8px;
 }
+.title-bar-controls button[aria-label="Maximize"] {
+    background-size: 18px 18px;
+    background-position: top 4px left 6px;
+}
+.title-bar-controls button[aria-label="Restore"] {
+    background-size: 16px 18px;
+    background-position: top 4px left 6px;
+}
 .title-bar-controls button[aria-label="Close"] {
     margin-left: 4px;
     background-size: 16px 14px;
@@ -128,10 +140,50 @@ label {
     max-width: 25rem;
 }
 
+/* a little smaller than the screen allows, so some desktop shows around it.
+ * Only the contents are scaled: the title bar has to stay finger-sized */
+.window-host > .window[data-window][data-name="Welcome!"] {
+    max-width: calc((100% - 8px) * 0.85);
+}
+.window[data-name="Welcome!"] > .window-body {
+    zoom: 0.85;
+}
+
 /* these wrap the text by hand for the desktop's width */
 .window[data-name="Welcome!"] p:last-of-type br,
 .window[data-name="Run"] .window__dialog-info br {
     display: none;
+}
+
+/* --- PROGRAMS --- */
+
+/* open at a size that's usable with a thumb */
+.window-host > .window[data-window][data-name="MS-DOS"] {
+    width: 100%;
+}
+.window[data-name="Notepad"] .notepad__textarea {
+    min-width: min(300px, 80vw);
+    min-height: 200px;
+}
+.window[data-name="Email"] .email__body {
+    min-width: min(320px, 85vw);
+    min-height: 180px;
+
+    /* puts the send button above the text, where the keyboard can't cover it */
+    order: 1;
+}
+
+/* --- DESKTOP --- */
+
+/* the desktop's grid is narrower than its icons, which only shows once
+ * there's more than one column of them */
+.desktop {
+    grid-template-rows: repeat(auto-fill, 74px);
+    grid-template-columns: none;
+    grid-auto-columns: 88px;
+
+    grid-column-gap: 6px;
+    grid-row-gap: 20px;
 }
 
 /* --- TASKBAR --- */
@@ -239,4 +291,35 @@ label {
 
 #winamp-container {
     bottom: var(--taskbar-height);
+}
+
+/* webamp's title bar buttons are 9px squares: a finger gets a little more
+ * to hit, out of the empty space above and below them. The hit areas stay
+ * inside the window and off the other buttons */
+#webamp #minimize::after,
+#webamp #shade::after,
+#webamp #close::after,
+#webamp #equalizer-shade::after,
+#webamp #equalizer-close::after,
+#webamp #playlist-shade-button::after,
+#webamp #playlist-close-button::after {
+    content: "";
+    position: absolute;
+    top: -3px;
+    bottom: -11px;
+    left: 0;
+    right: 0;
+}
+#webamp #minimize::after {
+    left: -8px;
+}
+#webamp #close::after,
+#webamp #equalizer-close::after,
+#webamp #playlist-close-button::after {
+    right: -2px;
+}
+/* the playlist's scrollbar starts right underneath */
+#webamp #playlist-shade-button::after,
+#webamp #playlist-close-button::after {
+    bottom: -5px;
 }

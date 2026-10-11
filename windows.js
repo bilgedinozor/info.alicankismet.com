@@ -34,13 +34,22 @@ class WindowManager {
         document.querySelector('.task-bar__quick[alt="Show Desktop"]')
             .addEventListener('click', this.minimizeAll.bind(this))
 
-        // in the phone layout (css/mobile.css) windows are sized to the screen,
-        // so they change size whenever it does
+        // a phone's screen is too small for windows to end up just anywhere
+        // (see css/mobile.css), and it changes shape when the phone is turned
+        const centerInitialWindows = () => {
+            if (!isPhoneLayout()) return
+            document.querySelectorAll('[data-_wm_id="initialwindow"]')
+                .forEach(win => this.centerOnScreen(win))
+        }
+        centerInitialWindows()
+        // their size isn't final until their pictures are in
+        window.addEventListener('load', centerInitialWindows, {once: true})
+
         let wasPhoneLayout = isPhoneLayout()
         window.addEventListener('resize', () => {
             if (wasPhoneLayout || isPhoneLayout()) {
-                document.querySelectorAll('[data-window][data-wm_resizable="true"]')
-                    .forEach(win => this.notifyResized(win))
+                document.querySelectorAll('[data-window]')
+                    .forEach(win => this.fitToScreen(win))
             }
             wasPhoneLayout = isPhoneLayout()
         })
@@ -66,6 +75,35 @@ class WindowManager {
         const instance = window.pm.instances[win.dataset._pm_id]
         instance?.onResize()
         instance?.onResizeEnd()
+    }
+
+    // the part of the screen that windows have to themselves
+    getWorkArea() {
+        return {
+            width: window.innerWidth,
+            height: document.querySelector('.task-bar').getBoundingClientRect().top
+        }
+    }
+
+    // phone layout: move a window back onto the screen. css/mobile.css is
+    // what keeps it from being bigger than the screen in the first place
+    fitToScreen(win) {
+        // a maximized window has nowhere to go
+        if (win.dataset.wm_maximized !== 'true') {
+            const area = this.getWorkArea()
+            const rect = win.getBoundingClientRect()
+            win.style.left = `${Math.max(0, Math.min(rect.x, area.width  - rect.width))}px`
+            win.style.top  = `${Math.max(0, Math.min(rect.y, area.height - rect.height))}px`
+        }
+
+        this.notifyResized(win)
+    }
+
+    centerOnScreen(win) {
+        const area = this.getWorkArea()
+        const rect = win.getBoundingClientRect()
+        win.style.left = `${Math.max(0, (area.width  - rect.width)  / 2)}px`
+        win.style.top  = `${Math.max(0, (area.height - rect.height) / 2)}px`
     }
 
     /* --- WINDOW MOVEMENT --- */
@@ -133,7 +171,7 @@ class WindowManager {
         win.dataset.isresizing = false
 
 
-        // in the phone layout the window fills the screen, which is no minimum
+        // the phone layout has a minimum of its own (see css/mobile.css)
         if (!isPhoneLayout()) {
             let rect = win.getBoundingClientRect()
             win.style.minWidth  = `${rect.width - 4}px`
@@ -429,8 +467,10 @@ class WindowManager {
         title = title || name
 
         if (!x || !y) {
-            x = 100 + (winhost.children.length * 20)
-            y = 100 + (winhost.children.length * 20)
+            // a phone has no room for the desktop's margin
+            const origin = isPhoneLayout() ? 10 : 100
+            x = origin + (winhost.children.length * 20)
+            y = origin + (winhost.children.length * 20)
         }
         win.style.left = `${x}px`
         win.style.top  = `${y}px`
@@ -500,9 +540,16 @@ class WindowManager {
             cb(win)
         }
 
-        // on phones these fill the screen rather than opening at their own size
-        if (resizable && isPhoneLayout()) {
-            this.notifyResized(win)
+        if (isPhoneLayout()) {
+            if (resizable) {
+                // stamp the size it opened at: when the screen is too small
+                // for that, the contents follow the window instead of
+                // sticking out of it
+                const size = win.getBoundingClientRect()
+                win.style.width  = `${size.width}px`
+                win.style.height = `${size.height}px`
+            }
+            this.fitToScreen(win)
         }
     }
 
