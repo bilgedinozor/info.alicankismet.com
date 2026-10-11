@@ -1,0 +1,12 @@
+services:
+  web:
+    image: nginx:stable-alpine
+    container_name: info-alicankismet
+    restart: unless-stopped
+    ports:
+      # published like the other services on the server; cloudflared points here
+      - "8081:80"
+    volumes:
+      # the repo is the web root, so a git pull is a deploy (no rebuild)
+      - .:/usr/share/nginx/html:ro
+      - ./deploy/nginx:/etc/nginx/conf.d:ro
