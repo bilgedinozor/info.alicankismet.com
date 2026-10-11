@@ -94,9 +94,18 @@ class WinampProgram extends Program {
         this.root = document.getElementById('webamp')
 
         // clicking winamp brings it to the front like any other window
-        const focus = () => this.focusWindow()
+        const focus = () => {
+            // focusing redraws the taskbar. When that happens under a finger,
+            // ios takes the new buttons for what a hover revealed and never
+            // sends the tap's click, so winamp's own buttons go dead: leave
+            // everything alone when there's nothing to bring forward
+            if (this.isInFront()) return
+            this.focusWindow()
+        }
         this.root.addEventListener('mousedown', focus, true)
-        this.root.addEventListener('touchstart', focus, true)
+        // a tap arrives as a mousedown as well, once ios has made up its
+        // mind, so only a drag has to be caught from the touch itself
+        this.root.addEventListener('touchmove', focus, {capture: true, passive: true})
 
         this.webamp.onMinimize(() => window.wm.minimizeWindow(win))
         this.webamp.onClose(() => this.closeWindow())
@@ -108,6 +117,11 @@ class WinampProgram extends Program {
             attributeFilter: ['style', 'data-wm_minimized']
         })
         this.syncWithWindow()
+    }
+
+    isInFront() {
+        return this.handle.dataset.wm_order === '0'
+            && this.handle.dataset.wm_minimized !== 'true'
     }
 
     syncWithWindow() {
