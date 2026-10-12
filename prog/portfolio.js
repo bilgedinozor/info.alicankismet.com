@@ -111,7 +111,7 @@
                     adaptation for publication of my honours project paper, which can be found
                     <a href="https://misc.ka.ge/honours.pdf" target="_blank">here</a>. Watch me talk about it at the
                     Knowledge Representation for Hybrid and Compositional
-                    Artificial Intelligence workshop <a href="https://www.youtube.com/watch?v=i2gULufLnf8">here</a> (at KR 2021: 18th
+                    Artificial Intelligence workshop <a href="https://www.youtube.com/watch?v=i2gULufLnf8" target="_blank">here</a> (at KR 2021: 18th
                     International Conference on Principles of Knowledge
                     Representation and Reasoning).
                 </p>
@@ -156,7 +156,7 @@
                     I was Technical Secretary from 2018 to 2020 at CompSoc, the largest student society at the University of Edinburgh.
                 </p>
                 <ul>
-                    <li> <a href="https://github.com/compsoc-edinburgh/infball19-frontend"> Informatics Ball </a> <br/>
+                    <li> <a href="https://github.com/compsoc-edinburgh/infball19-frontend" target="_blank"> Informatics Ball </a> <br/>
                     Created the frontend for ticket sales to the Informatics Ball.
                     </li>
                 </ul>

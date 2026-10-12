@@ -190,8 +190,9 @@ class ExplorerProgram extends Program {
     onAttach() {
         const parent = this.getBodyHandle().parentElement
         if (parent.style.width === '') {
-            parent.style.width = '306px'
-            parent.style.height = '324px'
+            // the toolbars are taller in the phone layout
+            parent.style.width  = isPhoneLayout() ? '330px' : '306px'
+            parent.style.height = isPhoneLayout() ? '400px' : '324px'
         }
         // this.getBodyHandle().parentElement.style.width = '306px'
         // this.getBodyHandle().parentElement.style.height = '324px'

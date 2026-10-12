@@ -52,7 +52,12 @@ const saveWelcomePage = () => {
 }
 saveWelcomePage()
 
-const isMobileBrowser = () => (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1)
+// window.orientation is deprecated, a touch-first device counts too
+const isMobileBrowser = () => (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1) || window.matchMedia('(pointer: coarse)').matches
+
+// the phone layout is css/mobile.css: it's active whenever its stylesheet is
+const phoneLayoutQuery = window.matchMedia(document.querySelector('#mobile-css').media)
+const isPhoneLayout = () => phoneLayoutQuery.matches
 
 /* shims for mobile */
 const recalculateHeight = () => {

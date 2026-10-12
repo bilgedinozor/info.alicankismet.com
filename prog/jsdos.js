@@ -43,13 +43,7 @@ class jsdosProgram extends Program {
   }
 
   onAttach() {
-    if (!this.isMobileBrowser()) {
-      this.getBodyHandle().style.margin = 0;
-    } else {
-      this.getBodyHandle()
-        .querySelector("button.jsdos__close")
-        .addEventListener("click", this.closeWindow.bind(this));
-    }
+    this.getBodyHandle().style.margin = 0;
     this.getBodyHandle().querySelector("iframe").focus();
   }
 }

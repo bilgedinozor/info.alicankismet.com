@@ -1,0 +1,325 @@
+/* --- PHONE LAYOUT ---
+ *
+ * This file is only applied on phone-sized screens (see the media attribute
+ * of its <link> in index.html), so nothing in here touches the desktop
+ * experience. On a phone:
+ *      - windows still float and drag around, but never open bigger than
+ *        the screen or off it (the window manager helps, see windows.js)
+ *      - everything that gets tapped is finger-sized
+ *      - start menu submenus fold open in place (see startmenu.js)
+ */
+
+:root {
+    --taskbar-height: 42px;
+    --title-bar-height: 34px;
+}
+
+/* --- TEXT --- */
+
+.window,
+.title-bar,
+button,
+label {
+    font-size: 13px;
+}
+
+/* ios zooms the whole page in when a field with a smaller font is focused */
+.window input[type="text"],
+.window input[type="email"],
+.window select,
+.window textarea {
+    font-size: 16px;
+}
+.window input[type="text"],
+.window input[type="email"],
+.window select {
+    height: 30px;
+}
+
+/* --- WINDOWS --- */
+
+/* inline sizes from the window manager still apply, within these limits */
+.window-host > .window[data-window] {
+    box-sizing: border-box;
+    /* otherwise a window gets narrower the further right it sits */
+    width: max-content;
+    max-width: calc(100% - 8px);
+    max-height: calc(100% - var(--taskbar-height) - 8px);
+
+    /* the desktop's minimum is stamped per window, and can be more than fits */
+    min-width: 0 !important;
+    min-height: 0 !important;
+}
+.window-host > .window[data-window][data-wm_resizable="true"] {
+    min-width: 180px !important;
+    min-height: 120px !important;
+    overflow: hidden;
+}
+
+/* dialogs can't be resized, so whatever doesn't fit has to scroll */
+.window-host > .window[data-window]:not([data-wm_resizable="true"]) {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* same as index.css, without the margin the desktop leaves around it */
+.window-host > .window[data-window][data-wm_maximized="true"] {
+    height: calc(100% - var(--taskbar-height)) !important;
+    max-width: none;
+    max-height: none;
+    transform: none;
+}
+
+/* dragging these shouldn't scroll, zoom or refresh the page instead */
+html,
+body {
+    overscroll-behavior: none;
+}
+.window > .title-bar,
+.window-resize-handle {
+    touch-action: none;
+}
+
+.window > .title-bar {
+    box-sizing: border-box;
+    height: var(--title-bar-height);
+    padding-left: 6px;
+}
+.title-bar-text {
+    font-size: 14px;
+    margin-right: 8px;
+    min-width: 0;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.title-bar-controls {
+    flex-shrink: 0;
+}
+
+/* 98.css draws these at 16x14, this is exactly double */
+.window .title-bar-controls > button {
+    min-width: 32px;
+    min-height: 28px;
+    image-rendering: pixelated;
+}
+.title-bar-controls button[aria-label="Minimize"] {
+    background-size: 12px 4px;
+    background-position: bottom 6px left 8px;
+}
+.title-bar-controls button[aria-label="Maximize"] {
+    background-size: 18px 18px;
+    background-position: top 4px left 6px;
+}
+.title-bar-controls button[aria-label="Restore"] {
+    background-size: 16px 18px;
+    background-position: top 4px left 6px;
+}
+.title-bar-controls button[aria-label="Close"] {
+    margin-left: 4px;
+    background-size: 16px 14px;
+    background-position: top 6px left 8px;
+}
+
+/* same as index.css, but for the taller title bar */
+.window[data-window] > .window-body {
+    height: calc(100% - var(--title-bar-height) - 16px);
+}
+.window[data-window] > .window-body.window-body--nomargin {
+    height: calc(100% - var(--title-bar-height));
+}
+
+.window-body button {
+    min-height: 36px;
+}
+
+/* --- WELCOME --- */
+
+.typography {
+    max-width: 25rem;
+}
+
+/* a little smaller than the screen allows, so some desktop shows around it.
+ * Only the contents are scaled: the title bar has to stay finger-sized */
+.window-host > .window[data-window][data-name="Welcome!"] {
+    max-width: calc((100% - 8px) * 0.85);
+}
+.window[data-name="Welcome!"] > .window-body {
+    zoom: 0.85;
+}
+
+/* these wrap the text by hand for the desktop's width */
+.window[data-name="Welcome!"] p:last-of-type br,
+.window[data-name="Run"] .window__dialog-info br {
+    display: none;
+}
+
+/* --- PROGRAMS --- */
+
+/* open at a size that's usable with a thumb */
+.window-host > .window[data-window][data-name="MS-DOS"] {
+    width: 100%;
+}
+.window[data-name="Notepad"] .notepad__textarea {
+    min-width: min(300px, 80vw);
+    min-height: 200px;
+}
+.window[data-name="Email"] .email__body {
+    min-width: min(320px, 85vw);
+    min-height: 180px;
+
+    /* puts the send button above the text, where the keyboard can't cover it */
+    order: 1;
+}
+
+/* --- DESKTOP --- */
+
+/* the desktop's grid is narrower than its icons, which shows as soon as
+ * there's more than one column of them. desktop.js reads the grid from here
+ * when it places the icons */
+.desktop {
+    grid-template-rows: repeat(auto-fill, 74px);
+    grid-template-columns: repeat(auto-fill, 88px);
+
+    grid-column-gap: 6px;
+    grid-row-gap: 20px;
+}
+
+/* --- TASKBAR --- */
+
+.task-bar {
+    box-sizing: border-box;
+    width: 100%;
+    height: var(--taskbar-height);
+    flex-shrink: 0;
+}
+
+#start-btn {
+    min-height: 34px;
+    padding: 0 6px;
+    flex-shrink: 0;
+}
+
+.task-bar__divider {
+    height: 34px;
+    flex-shrink: 0;
+}
+
+/* buttons share the bar's width instead of running off the screen */
+.task-bar__main {
+    min-width: 0;
+    overflow: hidden;
+}
+.task-bar__launch {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 150px;
+    min-height: 34px;
+}
+.task-bar__launch > img {
+    flex-shrink: 0;
+}
+.task-bar__launch > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* --- START MENU --- */
+
+.start-menu {
+    bottom: calc(var(--taskbar-height) - 4px);
+    box-sizing: border-box;
+    width: min(260px, calc(100% - 16px));
+    max-height: calc(100% - var(--taskbar-height));
+}
+
+.start-menu__menu {
+    min-width: 0;
+    font-size: 14px;
+
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.start-menu__item,
+.start-menu__submenu-item {
+    flex-wrap: wrap;
+    padding: 8px 6px;
+}
+
+/* submenus sit under their parent rather than flying out beside it */
+.start-menu__submenu-container {
+    display: none;
+    position: static;
+    flex: 0 0 100%;
+    width: auto;
+    height: auto;
+
+    opacity: 1;
+    pointer-events: initial;
+}
+[data-open="true"] > .start-menu__submenu-container {
+    display: block;
+}
+
+.start-menu__submenu,
+.start-menu__item > .start-menu__submenu-container > .start-menu__submenu {
+    position: static;
+    min-width: 0;
+    margin: 6px 0 0 11px;
+    padding: 0;
+
+    box-shadow: none;
+    border-left: 1px dotted gray;
+}
+
+/* an open parent isn't highlighted, or its whole submenu would be */
+.start-menu__item[data-open="true"],
+.start-menu__submenu-item[data-open="true"] {
+    background-color: transparent;
+    color: black;
+}
+.start-menu__item[data-open="true"] > .start-menu__item-menu-indicator,
+.start-menu__submenu-item[data-open="true"] > .start-menu__item-menu-indicator {
+    filter: none;
+    transform: rotate(90deg);
+}
+
+/* --- WINAMP --- */
+
+#winamp-container {
+    bottom: var(--taskbar-height);
+}
+
+/* webamp's title bar buttons are 9px squares: a finger gets a little more
+ * to hit, out of the empty space above and below them. The hit areas stay
+ * inside the window and off the other buttons */
+#webamp #minimize::after,
+#webamp #shade::after,
+#webamp #close::after,
+#webamp #equalizer-shade::after,
+#webamp #equalizer-close::after,
+#webamp #playlist-shade-button::after,
+#webamp #playlist-close-button::after {
+    content: "";
+    position: absolute;
+    top: -3px;
+    bottom: -11px;
+    left: 0;
+    right: 0;
+}
+#webamp #minimize::after {
+    left: -8px;
+}
+#webamp #close::after,
+#webamp #equalizer-close::after,
+#webamp #playlist-close-button::after {
+    right: -2px;
+}
+/* the playlist's scrollbar starts right underneath */
+#webamp #playlist-shade-button::after,
+#webamp #playlist-close-button::after {
+    bottom: -5px;
+}
