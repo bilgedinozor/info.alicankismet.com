@@ -153,3 +153,230 @@
 .window[data-name="Run"] .run__runbar > span {
     margin: 0 10px 0 5px;
 }
+
+/* --- PROPERTIES --- */
+
+/* laid out to the pixel after the real thing, hence all the odd numbers */
+
+.properties__tabs {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    padding-left: 2px;
+
+    cursor: default;
+    -webkit-user-select: none;
+    user-select: none;
+}
+.properties__tab {
+    position: relative;
+    white-space: nowrap;
+
+    padding: 3px 6px 4px 6px;
+    background-color: var(--gray);
+    border-radius: 2px 2px 0 0;
+    box-shadow: inset 1px 1px #fff, inset -1px 0 #0a0a0a, inset 2px 2px #dfdfdf, inset -2px 0 gray;
+}
+/* the open tab stands taller and covers the top edge of the panel under it */
+.properties__tab--active {
+    z-index: 1;
+    margin: 0 -2px -2px -2px;
+    padding: 5px 8px 6px 8px;
+}
+
+.properties__panel {
+    position: relative;
+    height: 358px;
+    box-shadow: var(--inset);
+}
+.properties__logo {
+    position: absolute;
+    top: 45px;
+    left: 48px;
+    width: 114px;
+    height: 109px;
+}
+.properties__info {
+    position: absolute;
+    top: 18px;
+    left: 187px;
+    line-height: 18px;
+}
+.properties__info p {
+    margin: 0;
+}
+.properties__info .properties__value {
+    margin-left: 21px;
+}
+.properties__group--system {
+    height: 71px;
+}
+.properties__group--registered {
+    height: 87px;
+}
+
+/* one page per tab, only the open one shows */
+.properties__page {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+.properties__page--active {
+    display: block;
+}
+
+.properties__page--devices {
+    flex-direction: column;
+    padding: 12px 13px 13px 13px;
+}
+.properties__page--devices.properties__page--active {
+    display: flex;
+}
+.properties__view {
+    margin-bottom: 10px;
+}
+.properties__view label {
+    /* 98.css makes labels flex, which eats the space before the underlined letter */
+    display: inline-block;
+}
+.properties__view label + input + label {
+    margin-left: 38px;
+}
+
+/* the device tree: 16px rows, 19px a level, dotted lines down from each icon */
+.properties__tree {
+    flex-grow: 1;
+    flex-basis: 0;
+    overflow-y: scroll;
+
+    margin: 0;
+    padding: 3px 4px;
+    list-style: none;
+    background-color: #fff;
+    box-shadow: inset -1px -1px #fff, inset 1px 1px grey, inset -2px -2px #dfdfdf, inset 2px 2px #0a0a0a;
+
+    cursor: default;
+    -webkit-user-select: none;
+    user-select: none;
+}
+.properties__tree ul {
+    margin: 0;
+    padding: 0 0 0 19px;
+    list-style: none;
+}
+.properties__node {
+    position: relative;
+    line-height: 16px;
+    white-space: nowrap;
+}
+.properties__row > img {
+    width: 16px;
+    height: 16px;
+    margin-right: 2px;
+    vertical-align: top;
+}
+.properties__name {
+    padding: 1px 2px;
+}
+.properties__name--selected {
+    background-color: navy;
+    color: #fff;
+    outline: 1px dotted #fff;
+    outline-offset: -1px;
+}
+/* down from the parent's icon, then across to this one */
+.properties__node .properties__node:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -11px;
+    border-left: 1px dotted gray;
+}
+.properties__node .properties__node:last-child:before {
+    bottom: auto;
+    height: 8px;
+}
+.properties__node .properties__node:after {
+    content: "";
+    position: absolute;
+    top: 8px;
+    left: -11px;
+    width: 9px;
+    border-top: 1px dotted gray;
+}
+.properties__node--branch > ul {
+    display: none;
+}
+.properties__node--open > ul {
+    display: block;
+}
+/* the [+] box, sitting on the line; the bars are drawn as backgrounds */
+.properties__toggle {
+    position: absolute;
+    z-index: 1;
+    top: 4px;
+    left: -15px;
+    box-sizing: border-box;
+    width: 9px;
+    height: 9px;
+
+    border: 1px solid gray;
+    background:
+        linear-gradient(#000, #000) center / 5px 1px no-repeat,
+        linear-gradient(#000, #000) center / 1px 5px no-repeat,
+        #fff;
+}
+.properties__node--open > .properties__toggle {
+    background:
+        linear-gradient(#000, #000) center / 5px 1px no-repeat,
+        #fff;
+}
+
+.properties__page--performance {
+    flex-direction: column;
+    padding: 13px 13px 14px 13px;
+}
+.properties__page--performance.properties__page--active {
+    display: flex;
+}
+.properties__page fieldset {
+    /* the thin etched frame of a group box, 98.css draws a heavier one */
+    border: 1px solid gray;
+    box-shadow: inset 1px 1px #fff, 1px 1px #fff;
+    padding: 0 15px 13px 15px;
+    min-width: 0;
+}
+.properties__page legend {
+    margin-left: -8px;
+    padding: 0 2px;
+    background-color: var(--gray);
+}
+.properties__status {
+    flex-grow: 1;
+}
+.properties__status table {
+    border-collapse: collapse;
+    margin-top: 11px;
+}
+.properties__status td {
+    height: 21px;
+    padding: 0;
+}
+.properties__status td:first-child {
+    width: 114px;
+}
+.properties__status p {
+    margin: 14px 0 0 0;
+}
+
+.properties__action {
+    margin-top: 7px;
+}
+.properties__action button {
+    margin: 0 0 0 7px;
+    min-width: 75px;
+}
