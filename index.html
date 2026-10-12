@@ -198,6 +198,63 @@
     </div>
   </div>
 
+  <!-- right click on the empty desktop; most of it is only there for looks -->
+  <div class="context-menu__container">
+    <div class="context-menu">
+      <div class="context-menu__item">
+        <span>Arrange <u>I</u>cons</span>
+        <img src="img/startmenu/MenuIndicator.png" alt="Menu" class="context-menu__indicator" />
+        <div class="context-menu context-menu__submenu">
+          <div class="context-menu__item" data-action="arrange-name">
+            <span>by <u>N</u>ame</span>
+          </div>
+          <div class="context-menu__item context-menu__item--disabled">
+            <span>by <u>T</u>ype</span>
+          </div>
+          <div class="context-menu__item context-menu__item--disabled">
+            <span>by <u>S</u>ize</span>
+          </div>
+          <div class="context-menu__item context-menu__item--disabled">
+            <span>by <u>D</u>ate</span>
+          </div>
+          <div class="context-menu__divider"></div>
+          <div class="context-menu__item" data-action="auto-arrange">
+            <span><u>A</u>uto Arrange</span>
+          </div>
+        </div>
+      </div>
+      <div class="context-menu__divider"></div>
+      <div class="context-menu__item" data-action="refresh">
+        <span>R<u>e</u>fresh</span>
+      </div>
+      <div class="context-menu__divider"></div>
+      <div class="context-menu__item context-menu__item--disabled">
+        <span><u>P</u>aste</span>
+      </div>
+      <div class="context-menu__divider"></div>
+      <div class="context-menu__item">
+        <span>Ne<u>w</u></span>
+        <img src="img/startmenu/MenuIndicator.png" alt="Menu" class="context-menu__indicator" />
+        <div class="context-menu context-menu__submenu">
+          <div class="context-menu__item" data-launch="run">
+            <span><u>S</u>hortcut</span>
+          </div>
+          <div class="context-menu__divider"></div>
+          <div class="context-menu__item" data-launch="notepad">
+            <span>Text Document</span>
+          </div>
+          <div class="context-menu__item" data-launch="winamp">
+            <span>Wave Sound</span>
+          </div>
+        </div>
+      </div>
+      <div class="context-menu__divider"></div>
+      <div class="context-menu__item" data-launch="properties">
+        <span>P<u>r</u>operties</span>
+      </div>
+    </div>
+  </div>
+
   <div class="task-bar">
     <button id="start-btn">
       <img src="img/taskbar/Start.png" />
@@ -405,6 +462,7 @@
   <script src="prog/shutdown.js" type="text/javascript" defer></script>
   <script src="prog/fullscreen.js" type="text/javascript" defer></script>
   <script src="prog/run.js" type="text/javascript" defer></script>
+  <script src="prog/properties.js" type="text/javascript" defer></script>
   <script src="prog/photo.js" type="text/javascript" defer></script>
   <script src="prog/jsdos.js" type="text/javascript" defer></script>
   <script src="prog/internet.js" type="text/javascript" defer></script>
