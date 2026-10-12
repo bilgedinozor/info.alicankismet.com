@@ -41,7 +41,7 @@ class PromptProgram extends Program {
 
     printAllCommands() {
         this.term.write('\r\nAvaliable commands:\r\n    ')
-        let cmds = Object.keys(window.pm.prototypes).join(', ')
+        let cmds = window.pm.listPrograms().join(', ')
         cmds += ', cls, exit, help, ?'
         this.term.writeln(cmds)
     }
@@ -55,7 +55,7 @@ class PromptProgram extends Program {
         // .\t<DIR>\t\t08-25-1998\t11:17p\r\n
         // ..\t<DIR>\t\t08-25-1998\t11:17p\r\n
         let get_byte_size = () => 100 + Math.floor(Math.random() * 156)
-        let cmds = Object.keys(window.pm.prototypes)
+        let cmds = window.pm.listPrograms()
         cmds.push('help')
         cmds.push('exit')
 

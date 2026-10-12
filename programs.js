@@ -2,14 +2,46 @@ class ProgramManager {
     constructor() {
         this.prototypes = {}
         this.instances = {}
+
+        // programs whose code is only fetched the first time they're launched
+        this.lazy = {}
+        this.loading = {}
     }
 
     registerPrototype(name, class_prototype) {
         this.prototypes[name] = class_prototype
     }
 
+    // scripts are loaded in order, and the last one has to register the prototype
+    registerLazy(name, scripts) {
+        this.lazy[name] = scripts
+    }
+
     hasPrototype(name) {
-        return (name in this.prototypes)
+        return (name in this.prototypes) || (name in this.lazy)
+    }
+
+    listPrograms() {
+        return [...new Set([...Object.keys(this.prototypes), ...Object.keys(this.lazy)])]
+    }
+
+    loadScript(src) {
+        if (!this.loading[src]) {
+            this.loading[src] = new Promise((resolve, reject) => {
+                const script = document.createElement('script')
+                script.src = src
+                script.onload = resolve
+                script.onerror = () => {
+                    // allow a retry on the next launch
+                    delete this.loading[src]
+                    script.remove()
+                    reject(new Error(`could not load ${src}`))
+                }
+                document.head.appendChild(script)
+            })
+        }
+
+        return this.loading[src]
     }
 
     createID() {
@@ -50,7 +82,13 @@ class ProgramManager {
         }
         console.log('launching ', name, ' with arg ', arg)
 
-        if (!this.hasPrototype(name)) {
+        if (!(name in this.prototypes) && (name in this.lazy)) {
+            for (let src of this.lazy[name]) {
+                await this.loadScript(src)
+            }
+        }
+
+        if (!(name in this.prototypes)) {
             console.warn(`attempted to open unregistered program ${name}, ignoring...`)
             return
         }
@@ -286,3 +324,6 @@ class Program {
 }
 
 window.pm = new ProgramManager()
+
+// xterm alone is bigger than the rest of the page put together
+window.pm.registerLazy('cmd', ['lib/xterm/xterm.js', 'lib/xterm/fit.js', 'prog/prompt.js'])
