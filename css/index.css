@@ -502,7 +502,8 @@ hr.hr--accent2 {
 .context-menu__item > span {
     flex-grow: 1;
 }
-.context-menu__item:hover {
+.context-menu__item:hover,
+.context-menu__item[data-open="true"] {
     background-color: navy;
     color: white;
 }
@@ -516,7 +517,8 @@ hr.hr--accent2 {
     height: 7px;
     margin-left: 20px;
 }
-.context-menu__item:hover > .context-menu__indicator {
+.context-menu__item:hover > .context-menu__indicator,
+.context-menu__item[data-open="true"] > .context-menu__indicator {
     filter: invert();
 }
 .context-menu__divider {
@@ -532,7 +534,15 @@ hr.hr--accent2 {
     opacity: 0;
     pointer-events: none;
 }
-.context-menu__item:hover > .context-menu__submenu {
+/* a touch screen's hover is whatever was tapped last, and would bring a
+ * submenu back along with the menu: there they open on a tap (desktop.js) */
+@media (hover: hover) {
+    .context-menu__item:hover > .context-menu__submenu {
+        opacity: 1;
+        pointer-events: initial;
+    }
+}
+.context-menu__item[data-open="true"] > .context-menu__submenu {
     opacity: 1;
     pointer-events: initial;
 }
@@ -540,6 +550,33 @@ hr.hr--accent2 {
 .context-menu--flip .context-menu__submenu {
     left: auto;
     right: 100%;
+}
+
+/* --- LONG PRESS --- */
+
+/* a windows progress bar that fills up above the finger while a press on a
+ * touch screen turns into a right click (placed and timed by desktop.js) */
+.long-press {
+    position: fixed;
+    z-index: 1011;
+    box-sizing: border-box;
+    width: 90px;
+    height: 18px;
+    padding: 3px;
+
+    background-color: var(--gray);
+    box-shadow: inset 1px 1px gray, inset -1px -1px #fff;
+    pointer-events: none;
+}
+/* seven blocks of 10px with 2px between them, showing up one at a time */
+.long-press__bar {
+    width: 0;
+    height: 100%;
+    background: repeating-linear-gradient(90deg, navy 0, navy 10px, transparent 10px, transparent 12px);
+    animation: long-press-fill steps(7, start) forwards;
+}
+@keyframes long-press-fill {
+    to { width: 100%; }
 }
 
 /* --- SELECTIONS --- */

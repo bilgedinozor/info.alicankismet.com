@@ -3,6 +3,15 @@
 const ICON_STORAGE_KEY = 'desktop-icons'
 // how far (px) the pointer has to travel before a press turns into a drag
 const ICON_DRAG_THRESHOLD = 4
+// a finger that stays down this long (ms) without straying further than
+// this (px) is a right click
+const LONG_PRESS_DELAY = 500
+const LONG_PRESS_SLOP  = 10
+// a progress bar fills up above the finger meanwhile. it waits a moment (ms)
+// so that a plain tap never shows it, and sits this far (px) above the touch
+// to stay clear of the fingertip
+const LONG_PRESS_HINT_DELAY = 200
+const LONG_PRESS_HINT_RISE  = 80
 
 class DesktopManager {
 
@@ -30,7 +39,8 @@ class DesktopManager {
         window.addEventListener('resize', this.layoutIcons.bind(this))
         window.addEventListener('orientationchange', this.layoutIcons.bind(this))
 
-        if (!isMobileBrowser()) this.attachContextMenu()
+        this.attachContextMenu()
+        if (isMobileBrowser()) this.attachLongPress()
 
         document.querySelector('.desktop')
             .addEventListener('click', this.handleClick.bind(this))
@@ -268,6 +278,8 @@ class DesktopManager {
 
         // any press outside of the menu dismisses it
         this.context_bg.addEventListener('mousedown', e => {
+            // not the finger that just opened it, though
+            if (this.context_held) return
             if (e.target === this.context_bg) this.closeContextMenu()
         })
         this.context_bg.addEventListener('contextmenu', e => e.preventDefault())
@@ -291,6 +303,94 @@ class DesktopManager {
                     window.pm.createInstance(el.dataset.launch)
                 })
             })
+
+        // there's no hovering on a touch screen: tapping an item opens its
+        // submenu instead
+        this.context_menu.querySelectorAll('.context-menu__item')
+            .forEach(el => {
+                const submenu = el.querySelector(':scope > .context-menu__submenu')
+                if (submenu === null) return
+
+                el.addEventListener('click', e => {
+                    if (!isMobileBrowser() || submenu.contains(e.target)) return
+
+                    this.closeContextSubmenus()
+                    el.dataset.open = true
+                })
+            })
+    }
+
+    // holding a finger still on the empty desktop is the touch screen's
+    // right click
+    attachLongPress() {
+        let timer = null
+        let start = null
+        let hint = null
+        let hint_timer = null
+
+        const showHint = () => {
+            hint = document.createElement('div')
+            hint.classList.add('long-press')
+            hint.innerHTML = '<div class="long-press__bar"></div>'
+            // full just as the menu opens
+            hint.firstChild.style.animationDuration =
+                `${LONG_PRESS_DELAY - LONG_PRESS_HINT_DELAY}ms`
+            document.body.appendChild(hint)
+
+            const rect = hint.getBoundingClientRect()
+            const left = Math.min(start.x - rect.width / 2, window.innerWidth - rect.width - 4)
+            hint.style.left = `${Math.max(4, left)}px`
+            hint.style.top  = `${Math.max(4, start.y - LONG_PRESS_HINT_RISE)}px`
+        }
+
+        const hideHint = () => {
+            clearTimeout(hint_timer)
+            if (hint !== null) hint.remove()
+            hint = null
+        }
+
+        const cancel = () => {
+            clearTimeout(timer)
+            timer = null
+            hideHint()
+        }
+
+        this.desktop_container.addEventListener('touchstart', e => {
+            cancel()
+            if (e.touches.length !== 1 || e.target.closest('.desktop-icon')) return
+
+            start = {x: e.touches[0].clientX, y: e.touches[0].clientY}
+            hint_timer = setTimeout(showHint, LONG_PRESS_HINT_DELAY)
+            timer = setTimeout(() => {
+                timer = null
+                hideHint()
+
+                // the same finger has started a selection box by now
+                this.handleSelectionEnd()
+                this.openContextMenu(start.x, start.y)
+                this.context_held = true
+            }, LONG_PRESS_DELAY)
+        }, {passive: true})
+
+        this.desktop_container.addEventListener('touchmove', e => {
+            if (timer === null) return
+
+            const dx = e.touches[0].clientX - start.x
+            const dy = e.touches[0].clientY - start.y
+            if (Math.hypot(dx, dy) > LONG_PRESS_SLOP) cancel()
+        }, {passive: true})
+
+        const release = e => {
+            cancel()
+            if (!this.context_held) return
+
+            // lifting the finger must not count as a tap on the menu that
+            // has appeared underneath it
+            if (e.cancelable) e.preventDefault()
+            setTimeout(() => this.context_held = false, 400)
+        }
+        this.desktop_container.addEventListener('touchend', release)
+        this.desktop_container.addEventListener('touchcancel', release)
     }
 
     openContextMenu(x, y) {
@@ -299,17 +399,23 @@ class DesktopManager {
 
         // open away from the screen edges, the way windows does
         const rect = this.context_menu.getBoundingClientRect()
-        const left = (x + rect.width  > window.innerWidth)  ? x - rect.width  : x
+        let   left = (x + rect.width  > window.innerWidth)  ? x - rect.width  : x
         const top  = (y + rect.height > window.innerHeight) ? y - rect.height : y
-        this.context_menu.style.left = `${Math.max(0, left)}px`
-        this.context_menu.style.top  = `${Math.max(0, top)}px`
+        left = Math.max(0, left)
 
         const submenus = [...this.context_menu.querySelectorAll('.context-menu__submenu')]
         const widest = Math.max(...submenus.map(sub => sub.offsetWidth))
-        this.context_menu.classList.toggle(
-            'context-menu--flip',
-            left + rect.width + widest > window.innerWidth
-        )
+        const flip = left + rect.width + widest > window.innerWidth
+        this.context_menu.classList.toggle('context-menu--flip', flip)
+
+        // on a narrow screen there may be no room on the left either: the
+        // menu moves over until its submenus fit there
+        if (flip && left < widest) {
+            left = Math.max(left, Math.min(widest, window.innerWidth - rect.width))
+        }
+
+        this.context_menu.style.left = `${left}px`
+        this.context_menu.style.top  = `${Math.max(0, top)}px`
 
         // slide up the submenus that would run off the bottom
         for (let sub of submenus) {
@@ -321,6 +427,12 @@ class DesktopManager {
 
     closeContextMenu() {
         this.context_bg.style.display = 'none'
+        this.closeContextSubmenus()
+    }
+
+    closeContextSubmenus() {
+        this.context_menu.querySelectorAll('[data-open="true"]')
+            .forEach(el => el.dataset.open = false)
     }
 
     runContextAction(action) {

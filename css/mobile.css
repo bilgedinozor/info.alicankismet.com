@@ -186,6 +186,16 @@ body {
     grid-row-gap: 20px;
 }
 
+/* --- CONTEXT MENU --- */
+
+/* opened by holding a finger on the desktop (see desktop.js) */
+.context-menu {
+    font-size: 14px;
+}
+.context-menu__item {
+    padding: 8px 8px 8px 20px;
+}
+
 /* --- TASKBAR --- */
 
 .task-bar {
