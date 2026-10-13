@@ -21,6 +21,16 @@ class ProgramManager {
         return (name in this.prototypes) || (name in this.lazy)
     }
 
+    // whether createInstance would find something to launch for this
+    canLaunch(name) {
+        name = name.trim()
+        if (name === 'nop' || (name.length > 4 && name.slice(0,4) === 'web:')) {
+            return true
+        }
+
+        return this.hasPrototype(name.split(':')[0].toLowerCase())
+    }
+
     listPrograms() {
         return [...new Set([...Object.keys(this.prototypes), ...Object.keys(this.lazy)])]
     }
@@ -60,6 +70,9 @@ class ProgramManager {
     }
 
     async createInstance(name) {
+        // names typed into run or the dos prompt come with stray spaces
+        name = name.trim()
+
         // slight hack, but allow web: links to be opened in new tabs
         if (name.length > 4 && name.slice(0,4) === 'web:') {
             console.log('opening web link')
@@ -80,6 +93,10 @@ class ProgramManager {
         if (name.indexOf(':') !== -1) {
             [name, arg] = name.split(/:(.+)/)
         }
+
+        // like windows, don't tell upper and lower case apart in a program's
+        // name. its argument (a folder, a file) stays the way it was typed
+        name = name.toLowerCase()
         console.log('launching ', name, ' with arg ', arg)
 
         if (!(name in this.prototypes) && (name in this.lazy)) {
@@ -99,7 +116,7 @@ class ProgramManager {
         const running = this.findInstance(key)
         if (running) {
             running.focusWindow()
-            return
+            return running
         }
 
         const id = this.createID()
@@ -132,6 +149,8 @@ class ProgramManager {
             // dispatch handler
             handle.onAttach(win)
         })
+
+        return handle
     }
 
     findInstance(key) {

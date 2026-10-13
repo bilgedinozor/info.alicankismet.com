@@ -32,18 +32,51 @@ class RunProgram extends Program {
     }
 
     launchProgram() {
-        let prog = this.getBodyHandle()
+        const input = this.getBodyHandle()
             .querySelector('input[name="prog"]')
-            .value
+        const prog = input.value.trim()
+
+        // windows keeps OK greyed out until something has been typed
+        if (prog === '') return
+
+        if (!window.pm.canLaunch(prog)) {
+            this.showNotFound(prog, input)
+            return
+        }
 
         window.pm.createInstance(prog)
         this.closeWindow()
     }
 
-    handleKeyUp(e) {
-        if (e.keyCode === 13) {
-            this.launchProgram()
+    // the message windows 98 gives for a name it can't find. run stays open
+    // behind it, and gets the name back, selected, to be typed again
+    async showNotFound(prog, input) {
+        // the name ends up in the dialog's markup, inside a | separated argument
+        const name = prog.replace(/[&<>"'|]/g, c => `&#${c.charCodeAt(0)};`)
+
+        const dialog = await window.pm.createInstance(
+            `dialog:Error|${name}|Cannot find the file '${name}' (or one of its components). `
+            + 'Make sure the path and filename are correct and that all required libraries are available.|OK'
+        )
+
+        dialog.onClose = () => {
+            if (!this.handle.isConnected) return
+
+            this.focusWindow()
+            input.focus()
+            input.select()
         }
+    }
+
+    // on key down, not up: the enter that dismisses the message above is
+    // released back in this field, and would bring the message straight up again
+    handleKeyDown(e) {
+        if (e.keyCode !== 13) return
+
+        // without this the rest of the same press goes to the message's OK
+        // button, which has the focus by then, and dismisses it unseen
+        e.preventDefault()
+        if (!e.repeat) this.launchProgram()
     }
 
     onAttach() {
@@ -58,7 +91,7 @@ class RunProgram extends Program {
 
         this.getBodyHandle()
             .querySelector('input[name="prog"]')
-            .addEventListener('keyup', this.handleKeyUp.bind(this))
+            .addEventListener('keydown', this.handleKeyDown.bind(this))
     }
 }
 

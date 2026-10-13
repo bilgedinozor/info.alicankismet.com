@@ -83,23 +83,25 @@ class PromptProgram extends Program {
     exec() {
         let cmd = this.currentInput.replace( /^\s+|\s+$/g, '') // remove trailing whitespace
 
-        if (cmd.slice(-4) === '.exe') {
+        if (cmd.slice(-4).toLowerCase() === '.exe') {
             cmd = cmd.slice(0, -4)
         }
 
-        let prog_name = cmd.split(':')[0]
+        // dos doesn't care whether a command is typed in capitals
+        const lower = cmd.toLowerCase()
+        let prog_name = lower.split(':')[0]
 
         if (window.pm.hasPrototype(prog_name)) {
             window.pm.createInstance(cmd)
-        } else if (cmd === '') {
+        } else if (lower === '') {
             // no-op
-        } else if (cmd === 'exit') {
+        } else if (lower === 'exit') {
             this.close()
-        } else if (cmd === 'cls') {
+        } else if (lower === 'cls') {
             this.clearTerminal()
-        } else if (cmd === 'help' || cmd === '?') {
+        } else if (lower === 'help' || lower === '?') {
             this.printAllCommands()
-        } else if (cmd === 'dir') {
+        } else if (lower === 'dir') {
             this.printDir()
         } else {
             this.term.writeln(`\r\n'${cmd}' is not recognized as an internal or external command, operable program, or batch file.`)
