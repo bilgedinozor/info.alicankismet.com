@@ -1,0 +1,74 @@
+/* winmine.html draws its menus the way windows 10 does. On me.alicankismet.com
+ * the game sits in a windows 98 window, and this gives the menus the looks to
+ * match. Sizes are left alone: the game works its window's size out from them */
+
+@font-face {
+    font-family: "Pixelated MS Sans Serif";
+    src: url(../../fonts/ms_sans_serif.woff2) format("woff2");
+    font-weight: 400;
+    font-style: normal;
+}
+
+.file-menu-frame {
+    border-bottom-color: #c0c0c0;
+}
+.file-menu {
+    border-bottom-color: #c0c0c0;
+    background-color: #c0c0c0;
+}
+
+.menu-game-button,
+.menu-help-button,
+.menu-extra-button,
+.menu-item {
+    font-family: "Pixelated MS Sans Serif", Arial, sans-serif;
+    font-size: 11px;
+    line-height: 16px;
+    -webkit-font-smoothing: none;
+}
+
+/* an open menu's name is pressed in */
+.game-file-menu-frame:hover .menu-game-button,
+.help-file-menu-frame:hover .menu-help-button,
+.extra-menu-frame:hover .menu-extra-button,
+.touch-open > div:first-child {
+    background-color: transparent;
+    border-color: gray #fff #fff gray;
+}
+
+.menu-game-button:hover + div, .menu-game-container:hover,
+.menu-help-button:hover + div, .menu-help-container:hover,
+.menu-extra-button:hover + div, .menu-extra-container:hover,
+.menu-game-container,
+.menu-help-container,
+.menu-extra-container {
+    border-color: #dfdfdf #0a0a0a #0a0a0a #dfdfdf;
+    background-color: #c0c0c0;
+    box-shadow: inset 1px 1px #fff, inset -1px -1px gray;
+}
+
+.menu-item:hover {
+    background-color: navy;
+    color: #fff;
+}
+.menu-item.menu-mark:hover {
+    background-image: url("data:image/svg+xml,%3Csvg fill='%23fff' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' preserveAspectRatio='xMidYMid meet' width='7' height='7'%3E%3Cstyle%3E%3C!%5BCDATA%5B.B%7Bfill-opacity:0%7D%5D%5D%3E%3C/style%3E%3Cdefs%3E%3Cpath d='M1 4h3v2H1V4z' id='A'/%3E%3Cpath d='M0 3h2v2H0V3z' id='B'/%3E%3Cpath d='M2 4h1v3H2V4z' id='C'/%3E%3Cpath d='M0 2h1v3H0V2z' id='D'/%3E%3Cpath d='M3 3h2v2H3V3z' id='E'/%3E%3Cpath d='M4 2h2v2H4V2z' id='F'/%3E%3Cpath d='M5 1h2v2H5V1z' id='G'/%3E%3Cpath d='M6 0h1v3H6V0z' id='H'/%3E%3C/defs%3E%3Cuse xlink:href='%23A'/%3E%3Cuse xlink:href='%23A' class='B'/%3E%3Cuse xlink:href='%23B'/%3E%3Cuse xlink:href='%23B' class='B'/%3E%3Cuse xlink:href='%23C'/%3E%3Cuse xlink:href='%23C' class='B'/%3E%3Cuse xlink:href='%23D'/%3E%3Cuse xlink:href='%23D' class='B'/%3E%3Cuse xlink:href='%23E'/%3E%3Cuse xlink:href='%23E' class='B'/%3E%3Cuse xlink:href='%23F'/%3E%3Cuse xlink:href='%23F' class='B'/%3E%3Cuse xlink:href='%23G'/%3E%3Cuse xlink:href='%23G' class='B'/%3E%3Cuse xlink:href='%23H'/%3E%3Cuse xlink:href='%23H' class='B'/%3E%3C/svg%3E");
+}
+.menu-item-disabled,
+.menu-item-disabled:hover {
+    background-color: transparent;
+    color: gray;
+    text-shadow: 1px 1px #fff;
+}
+.menu-item-separator {
+    background-color: gray;
+    box-shadow: 0 1px #fff;
+}
+
+/* a finger can't hover: a tap opens the menus instead (see prog/minesweeper.js
+ * in the site this copy belongs to) */
+.touch-open > div + div {
+    display: inline-block !important;
+    position: absolute;
+    z-index: 1;
+}

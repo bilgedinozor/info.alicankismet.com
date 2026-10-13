@@ -258,6 +258,18 @@ window.fs.addChild(new Folder({
             launch: 'jsdos:lotus'
         },
         {
+            img: 'img/special/minesweeper.png',
+            title: 'Minesweeper',
+            shortcut: true,
+            launch: 'winmine'
+        },
+        {
+            img: 'img/special/solitaire.png',
+            title: 'Solitaire',
+            shortcut: true,
+            launch: 'sol'
+        },
+        {
             img: 'img/special/gta5.png',
             title: 'GTA 5',
             shortcut: true,

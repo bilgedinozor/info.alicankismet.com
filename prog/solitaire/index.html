@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="src/solitaire.css" rel="stylesheet" type="text/css">
+    <title>Solitaire</title>
+</head>
+<body>
+    <!-- the game in src/ is js-solitaire by Radovan Janjic, the way it comes
+         with 98.js.org (https://github.com/1j01/98/tree/master/programs/js-solitaire,
+         MIT license, see LICENSE). This page is theirs without the menu bar,
+         which is drawn by the window the game is opened in (see prog/solitaire.js) -->
+    <div class="solitaire" id="js-solitaire">
+        <div class="size-limit">
+            <div class="upper" id="js-upper">
+                <div id="js-deck-pile" class="deck__pile upper__spacer"></div>
+                <div id="js-deck-deal" class="deck__deal upper__spacer"></div>
+                <div class="upper__spacer"></div>
+            </div>
+            <div id="js-board" class="board-deck"></div>
+        </div>
+    </div>
+    <script src="src/index.js"></script>
+</body>
+</html>

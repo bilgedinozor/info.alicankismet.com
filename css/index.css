@@ -256,6 +256,14 @@ hr.hr--accent2 {
     text-shadow: 1px 1px white;
 }
 
+/* the key that does the same, at the far end of an item. Clicks go through
+ * to the item itself */
+.menu-bar__shortcut {
+    float: right;
+    margin-left: 24px;
+    pointer-events: none;
+}
+
 .menu-bar__submenu-bg {
     position: fixed;
     z-index: 2010;

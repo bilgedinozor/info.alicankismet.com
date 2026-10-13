@@ -380,3 +380,50 @@
     margin: 0 0 0 7px;
     min-width: 75px;
 }
+
+/* --- GAMES --- */
+
+/* minesweeper and solitaire are pages of their own, each in a frame. The
+ * frame is as big as the game wants to be, and scaled to fit the room there
+ * is (see prog/minesweeper.js, prog/solitaire.js) */
+.game__viewport {
+    position: relative;
+    overflow: hidden;
+}
+.game__frame {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border: 0;
+    transform-origin: 0 0;
+}
+
+/* a frame keeps the mouse to itself: its window couldn't be dragged across
+ * it, or brought to the front by a click on it */
+.window:not([data-wm_order="0"]) .game__frame,
+.window[data-isdragging="true"] .game__frame,
+.window[data-isresizing="true"] .game__frame {
+    pointer-events: none;
+}
+
+.window[data-name="Minesweeper"] .game__viewport {
+    width: 148px;
+    height: 211px;
+}
+
+.window[data-name="Solitaire"] .game__viewport {
+    flex-grow: 1;
+    min-height: 0;
+    background-color: green;
+}
+/* the sunken edge around the table, drawn over the game */
+.window[data-name="Solitaire"] .game__viewport::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    box-shadow: var(--inset__inverse);
+    pointer-events: none;
+}

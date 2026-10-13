@@ -346,3 +346,7 @@ window.pm = new ProgramManager()
 
 // xterm alone is bigger than the rest of the page put together
 window.pm.registerLazy('cmd', ['lib/xterm/xterm.js', 'lib/xterm/fit.js', 'prog/prompt.js'])
+
+// the games are fetched by whoever plays them
+window.pm.registerLazy('winmine', ['prog/minesweeper.js'])
+window.pm.registerLazy('sol', ['prog/solitaire.js'])
