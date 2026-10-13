@@ -90,6 +90,15 @@
     overflow-x: hidden;
 }
 
+/* icons sit 74px apart in here, closer than a name can be wide. A long one
+ * goes on to a second line, as it does in windows, instead of running into
+ * the name next to it. A single word stays in one piece however long it is:
+ * the minimum wins over the maximum */
+.explorer__desktop .desktop-icon > span {
+    max-width: 68px;
+    min-width: min-content;
+}
+
 
 /* --- NOTEPAD --- */
 
